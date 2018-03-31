@@ -11,6 +11,10 @@ VAL copy(VM* vm, VAL x) {
         return x;
     }
     switch(GETTY(x)) {
+    case CT_BITS8:
+        return MKB8(vm, GETBITS8(x));
+    case CT_BITS16:
+        return MKB16(vm, GETBITS16(x));
     case CT_FWD:
         return GETPTR(x);
     case CT_CDATA:
@@ -33,8 +37,6 @@ VAL copy(VM* vm, VAL x) {
     case CT_STROFFSET:
     case CT_PTR:
     case CT_MANAGEDPTR:
-    case CT_BITS8:
-    case CT_BITS16:
     case CT_BITS32:
     case CT_BITS64:
     case CT_RAWDATA:
@@ -48,6 +50,7 @@ VAL copy(VM* vm, VAL x) {
         cl = NULL;
         break;
     }
+    assert(x->hdr.sz >= sizeof(Fwd));
     SETTY(x, CT_FWD);
     ((Fwd*)x)->fwd = cl;
     return cl;

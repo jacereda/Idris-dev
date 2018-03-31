@@ -18,7 +18,6 @@ linecount: $(LIBS:=.linecount)
 
 %.built: %
 	cd $< && $(IDRIS) --build $<.ipkg
-	touch $@
 
 %.clean: %
 	cd $< && $(IDRIS) --clean $<.ipkg
@@ -29,7 +28,6 @@ linecount: $(LIBS:=.linecount)
 
 %.doc: %
 	cd $< && $(IDRIS) --mkdoc $<.ipkg
-	touch $@
 
 %.linecount: %
 	cd $< && find . -name '*.idr' | xargs wc -l

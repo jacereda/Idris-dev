@@ -85,12 +85,14 @@ typedef struct StrOffset {
 
 typedef struct Bits8 {
   Hdr hdr;
-  uint8_t bits8;
+  //  uint8_t bits8;
+#define _bits8 hdr.u8
 } Bits8;
 
 typedef struct Bits16 {
   Hdr hdr;
-  uint16_t bits16;
+  //  uint16_t bits16;
+#define _bits16 hdr.u16
 } Bits16;
 
 typedef struct Bits32 {
@@ -255,8 +257,8 @@ static inline size_t getstrlen(String * x) {
 #define GETFLOAT(x) (((Float*)(x))->f)
 #define GETCDATA(x) (((CDataC*)(x))->item)
 
-#define GETBITS8(x) (((Bits8*)(x))->bits8)
-#define GETBITS16(x) (((Bits16*)(x))->bits16)
+#define GETBITS8(x) (((Bits8*)(x))->_bits8)
+#define GETBITS16(x) (((Bits16*)(x))->_bits16)
 #define GETBITS32(x) (((Bits32*)(x))->bits32)
 #define GETBITS64(x) (((Bits64*)(x))->bits64)
 

@@ -139,4 +139,4 @@ If you wish to install it to your environment:
 For local development with Cabal:
 
     nix-shell
-    cabal install # or build/test/whatever
+    cabal build # or test/install/whatever
