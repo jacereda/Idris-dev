@@ -55,11 +55,6 @@ typedef struct Array {
   VAL array[0];
 } Array;
 
-typedef struct Int {
-  Hdr hdr;
-  int i;
-} Int;
-
 typedef struct BigInt {
   Hdr hdr;
   char big[0];
