@@ -146,14 +146,13 @@ struct Msg_t {
 typedef struct Msg_t Msg;
 
 struct VM {
+    unsigned valstack_top;
+    unsigned valstack_base;
+    unsigned stack_max;
+
     int active; // 0 if no longer running; keep for message passing
                 // TODO: If we're going to have lots of concurrent threads,
                 // we really need to be cleverer than this!
-
-    VAL* valstack;
-    VAL* valstack_top;
-    VAL* valstack_base;
-    VAL* stack_max;
 
     CHeap c_heap;
     Heap heap;
@@ -175,6 +174,7 @@ struct VM {
 
     VAL ret;
     VAL reg1;
+    VAL valstack[0];
 };
 
 typedef struct VM VM;
@@ -235,8 +235,8 @@ typedef void(*func)(VM*, VAL*);
 // Register access
 
 #define RVAL (vm->ret)
-#define LOC(x) (vm->valstack_base[x])
-#define TOP(x) (vm->valstack_top[x])
+#define LOC(x) (vm->valstack[vm->valstack_base+x])
+#define TOP(x) (vm->valstack[vm->valstack_top+x])
 #define REG1 (vm->reg1)
 
 // Retrieving values
@@ -299,12 +299,12 @@ typedef intptr_t i_int;
 #endif
 
 #define INITFRAME TRACE\
-                  __attribute__((unused)) VAL* myoldbase
+                  __attribute__((unused)) unsigned myoldbase
 
 #define REBASE vm->valstack_base = oldbase
 #define RESERVE(x) do { \
     if (vm->valstack_top+(x) > vm->stack_max) { stackOverflow(); } \
-    else { memset(vm->valstack_top, 0, (x)*sizeof(VAL)); } \
+    else { memset(vm->valstack+vm->valstack_top, 0, (x)*sizeof(VAL)); } \
   } while(0)
 #define ADDTOP(x) vm->valstack_top += (x)
 #define TOPBASE(x) vm->valstack_top = vm->valstack_base + (x)

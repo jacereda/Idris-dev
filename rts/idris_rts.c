@@ -30,17 +30,15 @@ VM* init_vm(int stack_size, size_t heap_size,
             int max_threads // not implemented yet
             ) {
 
-    VM* vm = malloc(sizeof(VM));
+  VM* vm = malloc(sizeof(VM) + stack_size * sizeof(VAL));
     STATS_INIT_STATS(vm->stats)
     STATS_ENTER_INIT(vm->stats)
 
-    VAL* valstack = malloc(stack_size * sizeof(VAL));
 
     vm->active = 1;
-    vm->valstack = valstack;
-    vm->valstack_top = valstack;
-    vm->valstack_base = valstack;
-    vm->stack_max = valstack + stack_size;
+    vm->valstack_top = 0;
+    vm->valstack_base = 0;
+    vm->stack_max = stack_size;
 
     alloc_heap(&(vm->heap), heap_size, heap_size, NULL);
 
@@ -133,7 +131,6 @@ Stats terminate(VM* vm) {
 #ifdef HAS_PTHREAD
     free(vm->inbox);
 #endif
-    free(vm->valstack);
     free_heap(&(vm->heap));
     c_heap_destroy(&(vm->c_heap));
 #ifdef HAS_PTHREAD
@@ -397,13 +394,13 @@ void idris_trace(VM* vm, const char* func, int line) {
 
 void dumpStack(VM* vm) {
     int i = 0;
-    VAL* root;
 
-    for (root = vm->valstack; root < vm->valstack_top; ++root, ++i) {
+    for (i = 0; i < vm->valstack_top; i++) {
+        VAL v = vm->valstack[i];
         printf("%d: ", i);
-        dumpVal(*root);
-        if (*root >= (VAL)(vm->heap.heap) && *root < (VAL)(vm->heap.end)) { printf(" OK"); }
-        if (root == vm->valstack_base) { printf(" <--- base"); }
+        dumpVal(v);
+        if (v >= (VAL)(vm->heap.heap) && v < (VAL)(vm->heap.end)) { printf(" OK"); }
+        if (i == vm->valstack_base) { printf(" <--- base"); }
         printf("\n");
     }
     printf("RET: ");
@@ -799,7 +796,7 @@ void* runThread(void* arg) {
 }
 
 void* vmThread(VM* callvm, func f, VAL arg) {
-    VM* vm = init_vm(callvm->stack_max - callvm->valstack, callvm->heap.size,
+    VM* vm = init_vm(callvm->stack_max, callvm->heap.size,
                      callvm->max_threads);
     vm->processes=1; // since it can send and receive messages
     pthread_t t;

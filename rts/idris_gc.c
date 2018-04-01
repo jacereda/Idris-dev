@@ -98,10 +98,8 @@ void idris_gc(VM* vm) {
     /* Allocate swap heap. */
     alloc_heap(&vm->heap, vm->heap.size, vm->heap.growth, vm->heap.heap);
 
-    VAL* root;
-
-    for(root = vm->valstack; root < vm->valstack_top; ++root) {
-        *root = copy(vm, *root);
+    for (unsigned i = 0; i < vm->valstack_top; i++) {
+        vm->valstack[i] = copy(vm, vm->valstack[i]);
     }
 
 #ifdef HAS_PTHREAD
@@ -132,7 +130,7 @@ void idris_gc(VM* vm) {
 }
 
 void idris_gcInfo(VM* vm, int doGC) {
-    printf("Stack: <BOT %p> <TOP %p>\n", vm->valstack, vm->valstack_top);
+    printf("Stack: <BOT %p> <TOP %p>\n", vm->valstack, vm->valstack + vm->valstack_top);
     printf("Final heap size         %zd\n", vm->heap.size);
     printf("Final heap use          %zd\n", vm->heap.next - vm->heap.heap);
     if (doGC) { idris_gc(vm); }
