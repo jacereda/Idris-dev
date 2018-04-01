@@ -24,10 +24,9 @@
 // Closures
 typedef enum {
     CT_CON, CT_ARRAY, CT_INT, CT_BIGINT,
-    CT_FLOAT, CT_STRING, CT_STROFFSET, CT_BITS8,
-    CT_BITS16, CT_BITS32, CT_BITS64, CT_PTR,
-    CT_REF, CT_FWD, CT_MANAGEDPTR, CT_RAWDATA,
-    CT_CDATA
+    CT_FLOAT, CT_STRING, CT_STROFFSET, CT_BITS32,
+    CT_BITS64, CT_PTR, CT_REF, CT_FWD,
+    CT_MANAGEDPTR, CT_RAWDATA, CT_CDATA
 } ClosureType;
 
 typedef struct Hdr {
@@ -249,8 +248,8 @@ static inline size_t getstrlen(String * x) {
 #define GETFLOAT(x) (((Float*)(x))->f)
 #define GETCDATA(x) (((CDataC*)(x))->item)
 
-#define GETBITS8(x) (((Bits8*)(x))->hdr.u8)
-#define GETBITS16(x) (((Bits16*)(x))->hdr.u16)
+#define GETBITS8(x) (GETINT(x))
+#define GETBITS16(x) (GETINT(x))
 #define GETBITS32(x) (((Bits32*)(x))->bits32)
 #define GETBITS64(x) (((Bits64*)(x))->bits64)
 
