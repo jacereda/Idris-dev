@@ -415,11 +415,10 @@ void dumpStack(VM* vm) {
 void dumpVal(VAL v) {
     if (v==NULL) return;
     int i;
-    if (ISINT(v)) {
-        printf("%d ", (int)(GETINT(v)));
-        return;
-    }
     switch(GETTY(v)) {
+    case CT_INT:
+        printf("%d ", (int)(GETINT(v)));
+        break;
     case CT_CON:
         {
             Con * cl = (Con*)v;
@@ -857,10 +856,12 @@ static void copyArray(VM* vm, VAL * dst, VAL * src, size_t len) {
 static VAL doCopyTo(VM* vm, VAL x) {
     int ar;
     VAL cl;
-    if (x==NULL || ISINT(x)) {
+    if (x==NULL) {
         return x;
     }
     switch(GETTY(x)) {
+    case CT_INT:
+        return x;
     case CT_CDATA:
         cl = MKCDATAc(vm, GETCDATA(x));
         break;

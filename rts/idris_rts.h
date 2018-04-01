@@ -263,7 +263,7 @@ static inline size_t getstrlen(String * x) {
 
 #define CELEM(x) (((x)->hdr.sz - sizeof(Array)) / sizeof(VAL))
 
-#define GETTY(x) ((ClosureType)((x)->hdr.ty))
+#define GETTY(x) (ISINT(x)? CT_INT : (ClosureType)((x)->hdr.ty))
 #define SETTY(x,t) ((x)->hdr.ty = t)
 
 // Integers, floats and operators

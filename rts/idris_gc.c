@@ -13,10 +13,11 @@ static inline VAL plain(VM* vm, VAL x, size_t sz) {
 VAL copy(VM* vm, VAL x) {
     int ar;
     VAL cl;
-    if (x==NULL || ISINT(x)) {
+    if (x==NULL) {
         return x;
     }
     switch(GETTY(x)) {
+    case CT_INT: return x;
     case CT_BITS8: return plain(vm, x, sizeof(Bits8));
     case CT_BITS16: return plain(vm, x, sizeof(Bits16));
     case CT_BITS32: return plain(vm, x, sizeof(Bits32));
