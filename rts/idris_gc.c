@@ -30,13 +30,13 @@ VAL copy(VM* vm, VAL x) {
         break;
     case CT_BIGINT:
         cl = MKBIGMc(vm, GETMPZ(x));
-	break;
+        break;
     case CT_CON:
         ar = CARITY(x);
         if (ar == 0 && CTAG(x) < 256) {
             return x;
         }
-	// FALLTHROUGH
+        // FALLTHROUGH
     case CT_ARRAY:
     case CT_STRING:
     case CT_REF:
@@ -64,26 +64,34 @@ void cheney(VM *vm) {
        VAL heap_item = (VAL)scan;
        // If it's a CT_CON, CT_REF or CT_STROFFSET, copy its arguments
        switch(GETTY(heap_item)) {
-       case CT_CON: {
-	   Con * c = (Con*)heap_item;
-           size_t len = CARITY(c);
-           for(size_t i = 0; i < len; ++i)
-               c->args[i] = copy(vm, c->args[i]);
-       } break;
-       case CT_ARRAY: {
-	   Array * a = (Array*)heap_item;
-	   size_t len = CELEM(a);
-           for(size_t i = 0; i < len; ++i)
-               a->array[i] = copy(vm, a->array[i]);
-       } break;
-       case CT_REF: {
-	    Ref * r = (Ref*)heap_item;
-            r->ref = copy(vm, r->ref);
-       } break;
-       case CT_STROFFSET: {
-	   StrOffset * s = (StrOffset*)heap_item;
-           s->base = (String*)copy(vm, (VAL)s->base);
-       } break;
+       case CT_CON:
+           {
+               Con * c = (Con*)heap_item;
+               size_t len = CARITY(c);
+               for(size_t i = 0; i < len; ++i)
+                   c->args[i] = copy(vm, c->args[i]);
+           }
+           break;
+       case CT_ARRAY:
+           {
+               Array * a = (Array*)heap_item;
+               size_t len = CELEM(a);
+               for(size_t i = 0; i < len; ++i)
+                   a->array[i] = copy(vm, a->array[i]);
+           }
+           break;
+       case CT_REF:
+           {
+               Ref * r = (Ref*)heap_item;
+               r->ref = copy(vm, r->ref);
+           }
+           break;
+       case CT_STROFFSET:
+           {
+               StrOffset * s = (StrOffset*)heap_item;
+               s->base = (String*)copy(vm, (VAL)s->base);
+           }
+           break;
        default: // Nothing to copy
            break;
        }
