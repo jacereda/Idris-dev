@@ -364,14 +364,14 @@ VAL MKMPTRc(VM* vm, void* ptr, size_t size) {
 VAL MKB8(VM* vm, uint8_t bits8) {
     Bits8 * cl = iallocate(vm, sizeof(*cl), 1);
     SETTY(cl, CT_BITS8);
-    cl->_bits8 = bits8;
+    cl->hdr.u8 = bits8;
     return (VAL)cl;
 }
 
 VAL MKB16(VM* vm, uint16_t bits16) {
     Bits16 * cl = iallocate(vm, sizeof(*cl), 1);
     SETTY(cl, CT_BITS16);
-    cl->_bits16 = bits16;
+    cl->hdr.u16 = bits16;
     return (VAL)cl;
 }
 
