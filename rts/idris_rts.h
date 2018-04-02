@@ -75,16 +75,6 @@ typedef struct StrOffset {
     size_t offset;
 } StrOffset;
 
-typedef struct Bits8 {
-  Hdr hdr;
-// Uses hdr.u8 to store info
-} Bits8;
-
-typedef struct Bits16 {
-  Hdr hdr;
-// Uses hdr.u16 to store info
-} Bits16;
-
 typedef struct Bits32 {
     Hdr hdr;
     uint32_t bits32;
