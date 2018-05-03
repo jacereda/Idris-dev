@@ -37,7 +37,6 @@ import Control.Monad (liftM, liftM2, liftM4)
 import Control.Monad.State.Strict (lift)
 import Data.List (findIndex, (\\))
 import Data.Maybe (catMaybes)
-import qualified Data.Text as T
 
 data RErasure = RErased | RNotErased deriving Show
 
@@ -266,10 +265,10 @@ reifyTTNameApp t [sn]
                   case unList ss of
                     Nothing -> fail "Can't reify ImplementationN strings"
                     Just ss' -> ImplementationN <$> reifyTTName n <*>
-                                 pure [T.pack s | Constant (Str s) <- ss']
+                                 pure [txt s | Constant (Str s) <- ss']
         reifySN t [n, Constant (Str s)]
                 | t == reflm "ParentN" =
-                  ParentN <$> reifyTTName n <*> pure (T.pack s)
+                  ParentN <$> reifyTTName n <*> pure (txt s)
         reifySN t [n]
                 | t == reflm "MethodN" =
                   MethodN <$> reifyTTName n
@@ -709,10 +708,10 @@ reflectSpecialName (WithN i n) = reflCall "WithN" [ RConstant (I i)
 reflectSpecialName (ImplementationN impl ss) =
   reflCall "ImplementationN" [ reflectName impl
                              , mkList (RConstant StrType) $
-                                 map (RConstant . Str . T.unpack) ss
+                                 map (RConstant . Str . str) ss
                              ]
 reflectSpecialName (ParentN n s) =
-  reflCall "ParentN" [reflectName n, RConstant (Str (T.unpack s))]
+  reflCall "ParentN" [reflectName n, RConstant (Str (str s))]
 reflectSpecialName (MethodN n) =
   reflCall "MethodN" [reflectName n]
 reflectSpecialName (CaseN fc n) =
@@ -736,7 +735,7 @@ reflectNameQuotePattern (MN _ n)
   = do i <- getNameFrom (sMN 0 "mnCounter")
        claim i (RConstant (AType (ATInt ITNative)))
        movelast i
-       fill $ reflCall "MN" [Var i, RConstant (Str $ T.unpack n)]
+       fill $ reflCall "MN" [Var i, RConstant (Str $ str n)]
        solve
 reflectNameQuotePattern _ -- for all other names, match any
   = do nameHole <- getNameFrom (sMN 0 "name")

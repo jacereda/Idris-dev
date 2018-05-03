@@ -36,7 +36,6 @@ import Data.List hiding (insert, union)
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
-import qualified Data.Text as T
 import System.IO.Error (tryIOError)
 
 import Data.Generics.Uniplate.Data (descend, descendM)
@@ -1854,7 +1853,7 @@ addImpl' inpat env infns imp_meths ist ptm
                    PApp _ (PRef _ _ n) _ -> n
                    _ -> sUN "" -- doesn't matter then
 
-    ai :: Bool -> Bool -> [(Name, Maybe PTerm)] -> [[T.Text]] -> PTerm -> PTerm
+    ai :: Bool -> Bool -> [(Name, Maybe PTerm)] -> [[TText]] -> PTerm -> PTerm
     ai inpat qq env ds (PRef fc fcs f)
         | f `elem` infns = PInferRef fc fcs f
         | not (f `elem` map fst env) = handleErr $ aiFn topname allowcap inpat inpat qq imp_meths ist fc f fc ds []
@@ -1979,7 +1978,7 @@ aiFn :: Name -> Bool -- ^ Allow capitalization of pattern variables
      -> [Name]
      -> IState -> FC
      -> Name -- ^ function being applied
-     -> FC -> [[T.Text]]
+     -> FC -> [[TText]]
      -> [PArg] -- ^ initial arguments (if in a pattern)
      -> Either Err PTerm
 aiFn topname allowcap inpat True qq imp_meths ist fc f ffc ds []
@@ -1990,7 +1989,7 @@ aiFn topname allowcap inpat True qq imp_meths ist fc f ffc ds []
                 then Right $ PPatvar ffc f
                 else case f of
                        MN _ _ -> Right $ PPatvar ffc f
-                       UN xs | isDigit (T.head xs) -- for partial evaluation vars
+                       UN xs | isDigit (thead xs) -- for partial evaluation vars
                                  -> Right $ PPatvar ffc f
                        _ -> Left $ Msg $ show f ++ " is not a valid name for a pattern variable"
         alts -> let ialts = lookupCtxtName f (idris_implicits ist) in
@@ -2597,5 +2596,3 @@ mkUniqueNames env shadows tm
   mkUniq ql nmap (PUnquote tm) = fmap PUnquote (mkUniq (ql - 1) nmap tm)
 
   mkUniq ql nmap tm = descendM (mkUniq ql nmap) tm
-
-

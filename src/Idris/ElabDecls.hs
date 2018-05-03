@@ -259,7 +259,7 @@ elabDecl' what info (POpenInterfaces f ns ds)
 
 elabDecl' what info (PNamespace n nfc ps) =
   do mapM_ (elabDecl' what ninfo) ps
-     let ns = reverse (map T.pack newNS)
+     let ns = reverse (map txt newNS)
      sendHighlighting [(nfc, AnnNamespace ns Nothing)]
   where
     newNS = n : namespace info

@@ -374,7 +374,7 @@ buildDepMap ci used externs ctx startNames
         etaIdx = [length vars .. length tys - 1]
         etaVars = [eta i | i <- etaIdx]
         etaMap = M.fromList [varPair (eta i) i | i <- etaIdx]
-        eta i = MN i (pack "eta")
+        eta i = MN i (txt "eta")
 
         -- the variables that arose as function arguments only depend on (n, i)
         varMap = M.fromList [varPair v i | (v,i) <- zip vars [0..]]
@@ -497,7 +497,7 @@ buildDepMap ci used externs ctx startNames
             -- All arguments must be marked as used, except for the first four,
             -- which define the call type and are not needed at runtime.
             P _ (UN n) _
-                | n == T.pack "mkForeignPrim"
+                | n == txt "mkForeignPrim"
                 -> unconditionalDeps $ drop 4 args
 
             -- a bound variable might draw in additional dependencies,

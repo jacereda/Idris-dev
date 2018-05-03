@@ -330,7 +330,7 @@ name = do
     return (unalias aliases n)
    <?> "name"
   where
-    unalias :: M.Map [T.Text] [T.Text] -> Name -> Name
+    unalias :: M.Map [TText] [TText] -> Name -> Name
     unalias aliases (NS n ns) | Just ns' <- M.lookup ns aliases = NS n ns'
     unalias aliases name = name
 

@@ -124,7 +124,7 @@ constTy (B64 _) = "Bits64"
 constTy _ = "Type"
 
 namespaceOf :: Name -> Maybe String
-namespaceOf (NS _ ns) = Just (intercalate "." $ reverse (map T.unpack ns))
+namespaceOf (NS _ ns) = Just (intercalate "." $ reverse (map str ns))
 namespaceOf _         = Nothing
 
 instance SExpable OutputAnnotation where
@@ -168,7 +168,7 @@ instance SExpable OutputAnnotation where
               GT -> "more specific than searched type"
   toSExp (AnnErr e) = toSExp [(SymbolAtom "error", StringAtom (encodeErr e))]
   toSExp (AnnNamespace ns file) =
-    toSExp $ [(SymbolAtom "namespace", StringAtom (intercalate "." (map T.unpack ns)))] ++
+    toSExp $ [(SymbolAtom "namespace", StringAtom (intercalate "." (map str ns)))] ++
              [(SymbolAtom "decor", SymbolAtom $ if isJust file then "module" else "namespace")] ++
              maybeProps [("source-file", file)]
   toSExp AnnQuasiquote = toSExp [(SymbolAtom "quasiquotation", True)]

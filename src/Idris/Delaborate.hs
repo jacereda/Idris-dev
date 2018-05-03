@@ -518,7 +518,7 @@ pprintErr' i (ElaboratingArg f x _ e)
                                            then text "function" <> space
                                            else empty
         isInternal (MN _ _) = True
-        isInternal (UN n) = T.isPrefixOf (T.pack "__") n
+        isInternal (UN n) = tIsPrefixOf (txt "__") n
         isInternal (NS n _) = isInternal n
         isInternal _ = True
 
@@ -672,7 +672,7 @@ addImplicitDiffs x y
 -- Figure out why MNs are getting rewritte to UNs for top-level
 -- pattern-matching functions
 isUN :: Name -> Bool
-isUN (UN n) = not $ T.isPrefixOf (T.pack "__") n -- TODO
+isUN (UN n) = not $ tIsPrefixOf (txt "__") n -- TODO
 isUN (NS n _) = isUN n
 isUN _ = False
 

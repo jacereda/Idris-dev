@@ -28,7 +28,6 @@ import Data.Char (toLower)
 import Data.List
 import qualified Data.Map.Strict as Map
 import Data.Maybe
-import qualified Data.Text as T
 import System.Console.ANSI (Color)
 import System.Console.Haskeline
 
@@ -59,7 +58,7 @@ names = do ctxt <- tt_ctxt <$> getIState
     nameString :: Name -> Maybe String
     nameString (UN n)       = Just (str n)
     nameString (NS n ns)    =
-      let path = intercalate "." . map T.unpack . reverse $ ns
+      let path = intercalate "." . map str . reverse $ ns
       in fmap ((path ++ ".") ++) $ nameString n
     nameString _            = Nothing
 
@@ -74,7 +73,7 @@ namespaces = do
   return $ nub $ catMaybes $ map extractNS names
   where
     extractNS :: Name -> Maybe String
-    extractNS (NS n ns) = Just $ intercalate "." . map T.unpack . reverse $ ns
+    extractNS (NS n ns) = Just $ intercalate "." . map str . reverse $ ns
     extractNS _ = Nothing
 
 -- UpTo means if user enters full name then no other completions are shown

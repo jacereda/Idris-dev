@@ -53,7 +53,6 @@ import qualified Data.List.Split as Spl
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
-import qualified Data.Text as T
 import qualified System.Directory as Dir (makeAbsolute)
 import System.FilePath
 import Text.Megaparsec ((<?>))
@@ -84,9 +83,9 @@ import qualified Text.PrettyPrint.ANSI.Leijen as PP
 
 
 moduleName :: Parsing m => m Name
-moduleName = mkName [] . map T.pack <$> moduleNamePieces where
+moduleName = mkName [] . map txt <$> moduleNamePieces where
 
-  mkName :: [T.Text] -> [T.Text] -> Name
+  mkName :: [TText] -> [TText] -> Name
   mkName ts [x]    = if null ts then UN x else NS (UN x) ts
   mkName ts (x:xs) = mkName (x : ts) xs
 
@@ -101,7 +100,7 @@ moduleHeader =     P.try (do docs <- optional docComment
                              P.option ';' (lchar ';')
                              return (fmap fst docs,
                                      modName,
-                                     [(ifc, AnnNamespace (map T.pack modName) Nothing)]))
+                                     [(ifc, AnnNamespace (map txt modName) Nothing)]))
                <|> P.try (do lchar '%'; reserved "unqualified"
                              return (Nothing, [], []))
                <|> return (Nothing, ["Main"], [])
@@ -111,7 +110,7 @@ moduleHeader =     P.try (do docs <- optional docComment
 data ImportInfo = ImportInfo { import_reexport :: Bool
                              , import_path :: FilePath
                              , import_rename :: Maybe (String, FC)
-                             , import_namespace :: [T.Text]
+                             , import_namespace :: [TText]
                              , import_location :: FC
                              , import_modname_location :: FC
                              }
@@ -131,7 +130,7 @@ import_ = do fc <- extent $ keyword "import"
              P.option ';' (lchar ';')
              return $ ImportInfo reexport (toPath ns)
                         (fmap (\(n, fc) -> (toPath (Spl.splitOn "." n), fc)) newName)
-                        (map T.pack ns) fc idfc
+                        (map txt ns) fc idfc
           <?> "import statement"
   where toPath = foldl1' (</>)
 
@@ -1677,7 +1676,7 @@ loadSource lidr f toline
                                      , import_rename = Just (alias, _)
                                      , import_location = fc } <- imports
                         ]
-                      prep = map T.pack . reverse . Spl.splitOn [pathSeparator]
+                      prep = map txt . reverse . Spl.splitOn [pathSeparator]
                       aliasNames = [ (alias, fc)
                                    | ImportInfo { import_rename = Just (alias, fc)
                                                 } <- imports
@@ -1820,7 +1819,7 @@ loadSource lidr f toline
          putIState ist { idris_moduledocs = modDocs' }
          addIBC (IBCModDocs docName)
       where
-        docName = NS modDocName (map T.pack (reverse mname))
+        docName = NS modDocName (map txt (reverse mname))
         parsedDocs ist = annotCode (tryFullExpr syn ist) docs
 
 {-| Adds names to hide list -}

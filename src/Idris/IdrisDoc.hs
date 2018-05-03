@@ -12,8 +12,8 @@ module Idris.IdrisDoc (generateDocs) where
 import Idris.AbsSyntax
 import Idris.Core.Evaluate (Accessibility(..), ctxtAlist, isDConName, isFnName,
                             isTConName, lookupDefAcc)
-import Idris.Core.TT (Name(..), OutputAnnotation(..), TextFormatting(..),
-                      constIsType, nsroot, sUN, str, toAlist, txt)
+import Idris.Core.TT (Name(..), OutputAnnotation(..), TextFormatting(..), TText,
+                      constIsType, nsroot, sUN, str, toAlist, txt, tIsPrefixOf, tFromText)
 import Idris.Docs
 import Idris.Docstrings (nullDocstring)
 import qualified Idris.Docstrings as Docstrings
@@ -77,7 +77,7 @@ generateDocs ist nss' out =
 type Failable = Either String
 
 -- | Internal representation of a fully qualified namespace name
-type NsName = [T.Text]
+type NsName = [TText]
 
 -- | All information to be documented about a single namespace member
 type NsItem = (Name, Maybe Docs, Accessibility)
@@ -469,7 +469,7 @@ genTypeHeader ist (FD n _ args ftype _) = do
         htmlSignature  = displayDecorated decorator $ renderCompact signature
         signature      = pprintPTerm defaultPPOption [] names (idris_infixes ist) ftype
         names          = [ n | (n@(UN n'), _, _, _) <- args,
-                           not (T.isPrefixOf (txt "__") n') ]
+                           not (tIsPrefixOf (txt "__") n') ]
 
         decorator (AnnConst c) str | constIsType c = htmlSpan str "type" str
                                    | otherwise     = htmlSpan str "data" str
@@ -680,7 +680,7 @@ existingNamespaces :: FilePath -- ^ The base directory containing the
 existingNamespaces out = do
   let docs     = out ++ "/" ++ "docs"
       str2Ns s | s == rootNsStr = []
-      str2Ns s = reverse $ T.splitOn (T.singleton '.') (txt s)
+      str2Ns s = map tFromText $ reverse $ T.splitOn (T.singleton '.') (T.pack s)
       toNs  fp = do isFile    <- doesFileExist $ docs </> fp
                     let isHtml = ".html" == takeExtension fp
                         name   = dropExtension fp

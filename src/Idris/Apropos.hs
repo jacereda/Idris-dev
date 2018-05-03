@@ -10,8 +10,8 @@ module Idris.Apropos (apropos, aproposModules) where
 
 import Idris.AbsSyntax
 import Idris.Core.Evaluate (Def(..), ctxtAlist)
-import Idris.Core.TT (Binder(..), Const(..), Name(..), NameType(..), TT(..),
-                      toAlist)
+import Idris.Core.TT (Binder(..), Const(..), Name(..), NameType(..), TT(..), TText,
+                      toAlist, ttext, txt, str)
 import Idris.Docstrings (DocTerm, Docstring, containsText)
 
 import Data.List (intersperse, nub, nubBy)
@@ -46,11 +46,11 @@ aproposModules ist what = let mods  = toAlist (idris_moduledocs ist)
         isAproposAll (what:more) xs = filter (\(n,d) -> isApropos what n || isApropos what d)
                                              (isAproposAll more xs)
         parts = filter ((> 0) . T.length) . T.splitOn (T.pack " ") $ what
-        unModName (NS _ ns, d) = ((concat . intersperse "." . map T.unpack . reverse) ns, d)
+        unModName (NS _ ns, d) = ((concat . intersperse "." . map str . reverse) ns, d)
         unModName (n,       d) = ("<<MODULE>>", d)
 
-textIn :: T.Text -> T.Text -> Bool
-textIn a b = T.isInfixOf (T.toLower a) (T.toLower b)
+textIn :: T.Text -> TText -> Bool
+textIn a b = T.isInfixOf (T.toLower a) (T.toLower (ttext b))
 
 class Apropos a where
   isApropos :: T.Text -> a -> Bool
@@ -90,7 +90,7 @@ instance Apropos (TT Name) where
   isApropos str _                   = False
 
 instance Apropos Const where
-  isApropos str c = textIn str (T.pack (show c))
+  isApropos str c = textIn str (txt (show c))
 
 instance Apropos (Docstring a) where
   isApropos str d = containsText str d

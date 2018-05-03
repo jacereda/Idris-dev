@@ -35,7 +35,7 @@ module Idris.Core.TT(
   , NameOutput(..), NameType(..), NativeTy(..), OutputAnnotation(..)
   , Provenance(..), Raw(..), RigCount(..), SpecialName(..), TC(..), Term(..)
   , TermSize(..), TextFormatting(..), TT(..),Type(..), TypeInfo(..)
-  , UConstraint(..), UCs(..), UExp(..), Universe(..)
+  , UConstraint(..), UCs(..), UExp(..), Universe(..), TText
   , addAlist, addBinder, addDef, allTTNames, arity, bindAll
   , bindingOf, bindTyArgs, caseName, constDocs, constIsType, deleteDefExact
   , discard, emptyContext, emptyFC, explicitNames, fc_end, fc_fname
@@ -48,7 +48,7 @@ module Idris.Core.TT(
   , pToV, pToVs, pureTerm, raw_apply, raw_unapply, refsIn, safeForget
   , safeForgetEnv, showCG, showEnv, showEnvDbg, showSep
   , sImplementationN, sMN, sNS, str, subst, substNames, substTerm
-  , substV, sUN, tcname, termSmallerThan, tfail, thead, tnull
+  , substV, sUN, tcname, termSmallerThan, tfail, thead, tnull, ttext, tIsPrefixOf, tFromText
   , toAlist, traceWhen, txt, unApply, uniqueBinders, uniqueName
   , uniqueNameFrom, uniqueNameSet, unList, updateDef, vToP, weakenTm
   , rigPlus, rigMult, fstEnv, rigEnv, sndEnv, lookupBinder, envBinders
@@ -73,19 +73,23 @@ import Control.DeepSeq (($!!))
 import Control.Monad.State.Strict
 import Data.Binary hiding (get, put)
 import Data.Char
-import Data.Data (Data)
+import Data.Data
 import Data.Foldable (Foldable)
 import Data.List hiding (group, insert)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (listToMaybe)
 import Data.Set (Set, fromList, insert, member)
-import qualified Data.Text as T
+import qualified Data.Text as LT
+import qualified Data.Text.Short as T
+import qualified Data.Text.Short.Partial as PT
 import Data.Traversable (Traversable)
 import Data.Typeable (Typeable)
 import Debug.Trace
 import GHC.Generics (Generic)
 import Numeric (showIntAtBase)
 import Numeric.IEEE (IEEE(identicalIEEE))
+
+type TText = T.ShortText
 
 data Option = TTypeInTType
             | CheckConv
@@ -217,7 +221,7 @@ data OutputAnnotation = AnnName Name (Maybe NameOutput) (Maybe String) (Maybe St
                       | AnnTerm [(Name, Bool)] (TT Name) -- ^ pprint bound vars, original term
                       | AnnSearchResult Ordering -- ^ more general, isomorphic, or more specific
                       | AnnErr Err
-                      | AnnNamespace [T.Text] (Maybe FilePath)
+                      | AnnNamespace [TText] (Maybe FilePath)
                         -- ^ A namespace (e.g. on an import line or in
                         -- a namespace declaration). Stored starting
                         -- at the root, with the hierarchy fully
@@ -445,28 +449,52 @@ pmap f (x, y) = (f x, f y)
 traceWhen True msg a = trace msg a
 traceWhen False _  a = a
 
+
+packConstr :: Constr
+packConstr = mkConstr textDataType "pack" [] Prefix
+
+textDataType :: DataType
+textDataType = mkDataType "Data.Text.Text" [packConstr]
+
+instance Data TText where
+  gfoldl f z txt = z T.pack `f` (T.unpack txt)
+  toConstr _ = packConstr
+  gunfold k z c = case constrIndex c of
+    1 -> k (z T.pack)
+    _ -> error "gunfold"
+  dataTypeOf _ = textDataType
+
 -- RAW TERMS ----------------------------------------------------------------
 
 -- | Names are hierarchies of strings, describing scope (so no danger of
 -- duplicate names, but need to be careful on lookup).
-data Name = UN !T.Text -- ^ User-provided name
-          | NS !Name [T.Text] -- ^ Root, namespaces
-          | MN !Int !T.Text -- ^ Machine chosen names
+data Name = UN !TText -- ^ User-provided name
+          | NS !Name [TText] -- ^ Root, namespaces
+          | MN !Int !TText -- ^ Machine chosen names
           | SN !SpecialName -- ^ Decorated function names
-          | SymRef Int -- ^ Reference to IBC file symbol table (used during serialisation)
+          | SymRef !Int -- ^ Reference to IBC file symbol table (used during serialisation)
   deriving (Eq, Ord, Data, Generic, Typeable)
 
-txt :: String -> T.Text
+txt :: String -> TText
 txt = T.pack
 
-str :: T.Text -> String
+str :: TText -> String
 str = T.unpack
 
-tnull :: T.Text -> Bool
+tnull :: TText -> Bool
 tnull = T.null
 
-thead :: T.Text -> Char
-thead = T.head
+thead :: TText -> Char
+thead = PT.head
+
+ttext :: TText -> LT.Text
+ttext = T.toText
+
+tFromText :: LT.Text -> TText
+tFromText = T.fromText
+
+tIsPrefixOf :: TText -> TText -> Bool
+tIsPrefixOf = T.isPrefixOf
 
 -- Smart constructors for names, using old String style
 sUN :: String -> Name
@@ -489,8 +517,8 @@ deriving instance Binary Name
 
 data SpecialName = WhereN !Int !Name !Name
                  | WithN !Int !Name
-                 | ImplementationN !Name [T.Text]
-                 | ParentN !Name !T.Text
+                 | ImplementationN !Name [TText]
+                 | ParentN !Name !TText
                  | MethodN !Name
                  | CaseN !FC' !Name
                  | ImplementationCtorN !Name
@@ -586,8 +614,8 @@ tcname _ = False
 
 implicitable (NS n _) = False
 implicitable (UN xs) | T.null xs = False
-                     | otherwise = isLower (T.head xs) ||
-                                   T.head xs == '_'
+                     | otherwise = isLower (thead xs) ||
+                                   thead xs == '_'
 implicitable (MN _ x) = not (tnull x) && thead x /= '_'
 implicitable _ = False
 

@@ -286,7 +286,7 @@ data IState = IState {
   , idris_errorhandlers          :: [Name]                         -- ^ Global error handlers
   , idris_nameIdx                :: (Int, Ctxt (Int, Name))
   , idris_function_errorhandlers :: Ctxt (M.Map Name (S.Set Name)) -- ^ Specific error handlers
-  , module_aliases               :: M.Map [T.Text] [T.Text]
+  , module_aliases               :: M.Map [TText] [TText]
   , idris_consolewidth           :: ConsoleWidth                   -- ^ How many chars wide is the console?
   , idris_postulates             :: S.Set Name
   , idris_externs                :: S.Set (Name, Int)
@@ -984,7 +984,7 @@ data PTerm = PQuote Raw         -- ^ Inclusion of a core term into the
            | PElabError Err                               -- ^ Error to report on elaboration
            | PImpossible                                  -- ^ Special case for declaring when an LHS can't typecheck
            | PCoerced PTerm                               -- ^ To mark a coerced argument, so as not to coerce twice
-           | PDisamb [[T.Text]] PTerm                     -- ^ Preferences for explicit namespaces
+           | PDisamb [[TText]] PTerm                      -- ^ Preferences for explicit namespaces
            | PUnifyLog PTerm                              -- ^ dump a trace of unifications when building term
            | PNoImplicits PTerm                           -- ^ never run implicit converions on the term
            | PQuasiquote PTerm (Maybe PTerm)              -- ^ `(Term [: Term])
@@ -1980,10 +1980,10 @@ pprintPTerm ppo bnd docArgs infixes = prettySe (ppopt_depth ppo) startPrec bnd
 
     prettyBindingOf :: Name -> Bool -> Doc OutputAnnotation
     prettyBindingOf n imp = annotate (AnnBoundName n imp) (text (display n))
-      where display (UN n)    = T.unpack n
-            display (MN _ n)  = T.unpack n
+      where display (UN n)    = str n
+            display (MN _ n)  = str n
             -- If a namespace is specified on a binding form, we'd better show it regardless of the implicits settings
-            display (NS n ns) = (intercalate "." . map T.unpack . reverse) ns ++ "." ++ display n
+            display (NS n ns) = (intercalate "." . map str . reverse) ns ++ "." ++ display n
             display n         = show n
 
     prettyArgS d bnd (PImp _ _ _ n tm)          = prettyArgSi d bnd (n, tm)
@@ -2001,7 +2001,7 @@ pprintPTerm ppo bnd docArgs infixes = prettySe (ppopt_depth ppo) startPrec bnd
 
     opStr :: Name -> String
     opStr (NS n _)  = opStr n
-    opStr (UN n)    = T.unpack n
+    opStr (UN n)    = str n
 
     slist' :: Maybe Int -> Int -> [(Name, Bool)] -> PTerm -> Maybe [Doc OutputAnnotation]
     slist' (Just d) _ _ _ | d <= 0 = Nothing
@@ -2088,7 +2088,7 @@ basename n        = n
 -- | Determine whether a name was the one inserted for a hole or guess
 -- by the delaborator
 isHoleName :: Name -> Bool
-isHoleName (UN n) = n == T.pack "[__]"
+isHoleName (UN n) = n == txt "[__]"
 isHoleName _      = False
 
 -- | Check whether a PTerm has been delaborated from a Term containing a Hole or Guess
@@ -2102,18 +2102,18 @@ prettyName :: Bool           -- ^ whether the name should be parenthesised if it
            -> Name           -- ^ the name to pprint
            -> Doc OutputAnnotation
 prettyName infixParen showNS bnd n
-    | (MN _ s)  <- n, isPrefixOf "_" $ T.unpack s = text "_"
-    | (UN n')   <- n, isPrefixOf "__" $ T.unpack n' = text "_"
-    | (UN n')   <- n, T.unpack n' == "_" = text "_"
+    | (MN _ s)  <- n, isPrefixOf "_" $ str s = text "_"
+    | (UN n')   <- n, isPrefixOf "__" $ str n' = text "_"
+    | (UN n')   <- n, str n' == "_" = text "_"
     | Just imp  <- lookup n bnd = annotate (AnnBoundName n imp) fullName
     | otherwise                 = annotate (AnnName n Nothing Nothing Nothing) fullName
   where fullName = text nameSpace <> parenthesise (text (baseName n))
-        baseName (UN n)     = T.unpack n
+        baseName (UN n)     = str n
         baseName (NS n ns)  = baseName n
-        baseName (MN i s)   = T.unpack s
+        baseName (MN i s)   = str s
         baseName other      = show other
         nameSpace = case n of
-          (NS n' ns) -> if showNS then (concatMap (++ ".") . map T.unpack . reverse) ns else ""
+          (NS n' ns) -> if showNS then (concatMap (++ ".") . map str . reverse) ns else ""
           _ -> ""
         isInfix = case baseName n of
           ""      -> False

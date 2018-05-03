@@ -33,7 +33,7 @@ jsEscape = concatMap jschar
       | otherwise = "_" ++ show (fromEnum x) ++ "_"
 
 jsName :: Name -> Text
-jsName (MN i u) = T.concat ["$_", T.pack (show i), "_", T.pack $ jsEscape $ T.unpack u]
+jsName (MN i u) = T.concat ["$_", T.pack (show i), "_", T.pack $ jsEscape $ str u]
 jsName n = T.pack $ jsEscape $ showCG n
 
 jsNameGenerated :: Int -> Text

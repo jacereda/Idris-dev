@@ -341,7 +341,7 @@ elabImplementation info syn doc argDocs what fc cs parents acc opts n nfc ps pex
     pick n acc (d : ds) = pick n (acc ++ [d]) ds
 
     insertDefaults :: IState -> Name ->
-                      [(Name, (Name, PDecl))] -> [T.Text] ->
+                      [(Name, (Name, PDecl))] -> [TText] ->
                       [PDecl] -> [PDecl]
     insertDefaults i iname [] ns ds = ds
     insertDefaults i iname ((n,(dn, clauses)) : defs) ns ds

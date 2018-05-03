@@ -84,7 +84,7 @@ pprintFD ist totalityFlag nsFlag (FD n doc args ty f) =
           nest 4 (prettyName True nsFlag [] n
       <+> colon
       <+> pprintPTerm ppo [] [ n | (n@(UN n'),_,_,_) <- args
-                             , not (T.isPrefixOf (T.pack "__") n') ] infixes ty
+                             , not (tIsPrefixOf (txt "__") n') ] infixes ty
       -- show doc
       <$> renderDocstring (renderDocTerm (pprintDelab ist) (normaliseAll (tt_ctxt ist) [])) doc
       -- show fixity
@@ -297,8 +297,8 @@ getDocs :: Name -> HowMuchDocs -> Idris Docs
 getDocs n@(NS n' ns) w | n' == modDocName
    = do i <- getIState
         case lookupCtxtExact n (idris_moduledocs i) of
-          Just doc -> return . ModDoc (reverse (map T.unpack ns)) $ howMuch w doc
-          Nothing  -> fail $ "Module docs for " ++ show (reverse (map T.unpack ns)) ++
+          Just doc -> return . ModDoc (reverse (map str ns)) $ howMuch w doc
+          Nothing  -> fail $ "Module docs for " ++ show (reverse (map str ns)) ++
                              " do not exist! This shouldn't have happened and is a bug."
 getDocs n w
    = do i <- getIState

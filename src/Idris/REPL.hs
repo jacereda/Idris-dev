@@ -1047,7 +1047,7 @@ process fn (Core t)
               iPrintTermWithType (pprintTT [] tm) (pprintTT [] ty)
 
 process fn (DocStr (Left n) w)
-  | UN ty <- n, ty == T.pack "Type" = getIState >>= iRenderResult . pprintTypeDoc
+  | UN ty <- n, ty == txt "Type" = getIState >>= iRenderResult . pprintTypeDoc
   | otherwise = do
         ist <- getIState
         let docs = lookupCtxtName n (idris_docstrings ist) ++
