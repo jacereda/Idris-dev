@@ -26,7 +26,7 @@ import Idris.REPL.Parser (allHelp, setOptions)
 import Control.Monad.State.Strict
 import Data.Char (toLower)
 import Data.List
-import qualified Data.Map.Strict as Map
+import qualified Util.Map as Map
 import Data.Maybe
 import System.Console.ANSI (Color)
 import System.Console.Haskeline

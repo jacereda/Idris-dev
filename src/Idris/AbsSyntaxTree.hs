@@ -43,9 +43,9 @@ import Data.Foldable (Foldable)
 import Data.Function (on)
 import Data.Generics.Uniplate.Data (children, universe)
 import Data.List hiding (group)
-import qualified Data.Map.Strict as M
+import qualified Util.Map as M
 import Data.Maybe (mapMaybe, maybeToList)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import qualified Data.Text as T
 import Data.Traversable (Traversable)
 import Data.Typeable

@@ -29,10 +29,10 @@ import Control.Monad.Trans.State
 import Data.Foldable (foldMap)
 import Data.Generics.Uniplate.Data
 import Data.List
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
-import Data.Set (Set)
-import qualified Data.Set as Set
+import Util.Map (Map)
+import qualified Util.Map as Map
+import Util.Set (Set)
+import qualified Util.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
@@ -218,7 +218,7 @@ seqJs (x:xs) = JsSeq x (seqJs xs)
 
 data CGBodyState = CGBodyState { defs :: Map Name LDecl
                                , lastIntName :: Int
-                               , reWrittenNames :: Map.Map Name JsExpr
+                               , reWrittenNames :: Map Name JsExpr
                                , currentFnNameAndArgs :: (Text, [Text])
                                , usedArgsTailCallOptim :: Set (Text, Text)
                                , isTailRec :: Bool

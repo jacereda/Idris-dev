@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, MultiParamTypeClasses, DeriveGeneric #-}
 {-|
 Module      : Idris.Core.Constraints
 Description : Check universe constraints.
@@ -13,8 +13,11 @@ import Idris.Core.TT (ConstraintFC(..), Err'(..), TC(..), UConstraint(..),
 
 import Control.Monad.State.Strict
 import Data.List (partition)
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
+import Data.Hashable
+import Util.Set (ordNub)
+import qualified Util.Map as M
+import qualified Util.Set as S
+import GHC.Generics (Generic)
 
 -- | Check that a list of universe constraints can be satisfied.
 ucheck :: S.Set ConstraintFC -> TC ()
@@ -55,7 +58,9 @@ dropUnused xs = let cs = S.toList xs
 
 
 data Var = Var String Int
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord, Show, Generic)
+
+instance Hashable Var
 
 data Domain = Domain Int Int
     deriving (Eq, Ord, Show)
@@ -246,9 +251,6 @@ solve maxUniverseLevel ucs =
         -- | check if a domain is wiped out.
         wipeOut :: Domain -> Bool
         wipeOut (Domain l u) = l > u
-
-ordNub :: Ord a => [a] -> [a]
-ordNub = S.toList . S.fromList
 
 -- | variables in a constraint
 varsIn :: UConstraint -> [Var]

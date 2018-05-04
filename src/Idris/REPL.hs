@@ -37,7 +37,7 @@ import Data.Either (partitionEithers)
 import Data.List hiding (group)
 import Data.List.Split (splitOn)
 import Data.Maybe
-import qualified Data.Set as S
+import qualified Util.Set as S
 import qualified Data.Text as T
 import Data.Version
 import Idris.AbsSyntax

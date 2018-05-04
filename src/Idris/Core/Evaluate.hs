@@ -41,7 +41,7 @@ import Data.List
 import Data.Maybe (listToMaybe)
 import GHC.Generics (Generic)
 
-import qualified Data.Map.Strict as Map
+import qualified Util.Map as Map
 
 data EvalState = ES { limited :: [(Name, Int)],
                       nexthole :: Int,

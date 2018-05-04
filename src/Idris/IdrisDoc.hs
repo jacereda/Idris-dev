@@ -27,10 +27,10 @@ import Control.Monad.Trans.Except
 import Control.Monad.Trans.State.Strict
 import qualified Data.ByteString.Lazy as BS2
 import qualified Data.List as L
-import qualified Data.Map as M hiding ((!))
+import qualified Util.Map as M
 import Data.Maybe
 import Data.Monoid (mempty)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import qualified Data.Text as T
 import System.Directory
 import System.FilePath

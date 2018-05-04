@@ -6,7 +6,7 @@ License     : BSD3
 Maintainer  : The Idris Community.
 -}
 
-{-# LANGUAGE OverloadedStrings, PatternGuards #-}
+{-# LANGUAGE OverloadedStrings, PatternGuards, DeriveGeneric #-}
 
 module IRTS.JavaScript.Name
   ( jsName
@@ -20,9 +20,11 @@ module IRTS.JavaScript.Name
   ) where
 
 import Data.Char
+import Data.Hashable
 import Data.Text (Text)
 import qualified Data.Text as T
 import Idris.Core.TT
+import GHC.Generics (Generic)
 
 jsEscape :: String -> String
 jsEscape = concatMap jschar
@@ -39,7 +41,9 @@ jsName n = T.pack $ jsEscape $ showCG n
 jsNameGenerated :: Int -> Text
 jsNameGenerated v = T.pack $ "$cg$" ++ show v
 
-data Partial = Partial Name Int Int deriving (Eq, Ord)
+data Partial = Partial Name Int Int deriving (Eq, Ord, Generic)
+
+instance Hashable Partial
 
 jsNamePartial :: Partial -> Text
 jsNamePartial (Partial n i j) = T.concat ["$partial_", T.pack $ show i, "_", T.pack $ show j, "$" , jsName n]
@@ -48,7 +52,9 @@ jsTailCallOptimName :: Text -> Text
 jsTailCallOptimName x = T.concat ["$tco$", x]
 
 
-data HiddenClass = HiddenClass Name Int Int deriving (Eq, Ord)
+data HiddenClass = HiddenClass Name Int Int deriving (Eq, Ord, Generic)
+
+instance Hashable HiddenClass
 
 jsNameHiddenClass :: HiddenClass -> Text
 jsNameHiddenClass (HiddenClass n id arity) = T.concat ["$HC_", T.pack $ show arity, "_", T.pack $ show id,"$", jsName n]

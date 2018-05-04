@@ -26,7 +26,7 @@ import Control.Applicative ((<$>))
 import Control.Monad
 import Control.Monad.State.Strict
 import Data.List
-import qualified Data.Set as S
+import qualified Util.Set as S
 
 -- Pass in a term elaborator to avoid a cyclic dependency with ElabTerm
 

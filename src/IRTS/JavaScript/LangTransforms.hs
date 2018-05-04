@@ -13,16 +13,17 @@ module IRTS.JavaScript.LangTransforms( removeDeadCode
 
 
 import Data.List
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
+import Util.Map (Map)
+import qualified Util.Map as Map
 import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as Set
+import Util.Set (Set)
+import qualified Util.Set as Set
 import Idris.Core.CaseTree
 import Idris.Core.TT
 import IRTS.Lang
 
 import Data.Data
+import Data.Hashable
 import Data.Generics.Uniplate.Data
 
 deriving instance Typeable FDesc
@@ -40,9 +41,6 @@ deriving instance Data LDecl
 deriving instance Typeable LOpt
 deriving instance Data LOpt
 
-
-restrictKeys :: Ord k => Map k a -> Set k -> Map k a
-restrictKeys m s = Map.filterWithKey (\k _ -> k `Set.member` s) m
 
 extractGlobs :: Map Name LDecl -> LDecl -> [Name]
 extractGlobs defs (LConstructor _ _ _) = []
@@ -64,7 +62,7 @@ usedFunctions alldefs done names =
 usedDecls :: Map Name LDecl -> [Name] -> Map Name LDecl
 usedDecls dcls start =
   let used = reverse $ start ++ usedFunctions dcls (Set.fromList start) start
-  in restrictKeys dcls (Set.fromList used)
+  in Map.restrictKeys dcls (Set.fromList used)
 
 getUsedConstructors :: Map Name LDecl -> Set Name
 getUsedConstructors x = Set.fromList [ n | LCon _ _ n _ <- universeBi x]

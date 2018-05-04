@@ -23,7 +23,7 @@ import Prelude hiding (catch)
 import Control.Monad (when)
 import qualified Data.Foldable as Foldable
 import Data.List (intercalate, isPrefixOf)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import qualified Data.Text as T
 import System.IO.Error (ioeGetErrorString, isUserError)
 

@@ -5,6 +5,7 @@ Description : Code to handle import declarations.
 License     : BSD3
 Maintainer  : The Idris Community.
 -}
+{-# LANGUAGE DeriveGeneric #-}
 module Idris.Imports(
     IFileType(..), findIBC, findImport, findInPath, findPkgIndex
   , ibcPathNoFallback, installedPackages, pkgIndex
@@ -19,12 +20,16 @@ import IRTS.System (getIdrisLibDir)
 import Control.Applicative ((<$>))
 import Control.Monad.State.Strict
 import Data.Char (isAlpha, isDigit, toLower)
+import Data.Hashable
 import Data.List (isSuffixOf)
+import GHC.Generics (Generic)
 import System.Directory
 import System.FilePath
 
 data IFileType = IDR FilePath | LIDR FilePath | IBC FilePath IFileType
-    deriving (Show, Ord)
+    deriving (Show, Ord, Generic)
+
+instance Hashable IFileType
 
 instance Eq IFileType where
     IDR x == IDR y = x == y

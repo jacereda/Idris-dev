@@ -35,7 +35,6 @@ import Control.Monad
 import Control.Monad.State.Strict as State
 import Data.Char (isLetter, toLower)
 import Data.List
-import qualified Data.Map as Map
 import Data.Maybe
 import qualified Data.Text as T
 

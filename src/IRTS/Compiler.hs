@@ -33,9 +33,9 @@ import Prelude hiding (id, (.))
 import Control.Category
 import Control.Monad.State
 import Data.List
-import qualified Data.Map as M
+import qualified Util.Map as M
 import Data.Ord
-import qualified Data.Set as S
+import qualified Util.Set as S
 import System.Directory
 import System.Exit
 import System.IO

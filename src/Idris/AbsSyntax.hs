@@ -33,9 +33,9 @@ import Prelude hiding (Applicative, Foldable, Traversable, (<$>))
 import Data.Char
 import Data.Either
 import Data.List hiding (insert, union)
-import qualified Data.Map as M
+import qualified Util.Map as M
 import Data.Maybe
-import qualified Data.Set as S
+import qualified Util.Set as S
 import System.IO.Error (tryIOError)
 
 import Data.Generics.Uniplate.Data (descend, descendM)

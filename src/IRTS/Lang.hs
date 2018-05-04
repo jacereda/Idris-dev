@@ -15,8 +15,9 @@ import Idris.Core.TT
 
 import Control.Monad.State hiding (lift)
 import Data.Data (Data)
+import Data.Hashable
 import Data.List
-import qualified Data.Map.Strict as Map
+import qualified Util.Map as Map
 import Data.Typeable (Typeable)
 import GHC.Generics (Generic)
 
@@ -45,14 +46,18 @@ data LExp = LV Name
           | LOp PrimFn [LExp]
           | LNothing
           | LError String
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Generic)
+
+instance Hashable LExp
 
 data FDesc = FCon Name
            | FStr String
            | FUnknown
            | FIO FDesc
            | FApp Name [FDesc]
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+
+instance Hashable FDesc
 
 data Export = ExportData FDesc -- Exported data descriptor (usually string)
             | ExportFun Name -- Idris name
@@ -99,6 +104,8 @@ data PrimFn = LPlus ArithTy | LMinus ArithTy | LTimes ArithTy
             | LNoOp
   deriving (Show, Eq, Ord, Generic)
 
+instance Hashable PrimFn
+
 -- Supported target languages for foreign calls
 
 data FCallType = FStatic | FObject | FConstructor
@@ -119,7 +126,9 @@ data FType = FArith ArithTy
 data LAlt' e = LConCase Int Name [Name] e
              | LConstCase Const e
              | LDefaultCase e
-  deriving (Show, Eq, Ord, Functor, Data, Typeable)
+  deriving (Show, Eq, Ord, Functor, Data, Typeable, Generic)
+
+instance (Hashable a) => Hashable (LAlt' a)
 
 type LAlt = LAlt' LExp
 

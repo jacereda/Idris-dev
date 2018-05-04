@@ -28,7 +28,7 @@ import Prelude hiding (id, (.))
 
 import Control.Category
 import Control.Monad
-import qualified Data.Set as S
+import qualified Util.Set as S
 
 buildType :: ElabInfo
           -> SyntaxInfo

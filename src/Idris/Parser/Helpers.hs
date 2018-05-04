@@ -84,10 +84,10 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.State.Strict
 import Data.Char
-import qualified Data.HashSet as HS
+import qualified Util.Set as S
 import Data.List
 import qualified Data.List.NonEmpty as NonEmpty
-import qualified Data.Map as M
+import qualified Util.Map as M
 import Data.Maybe
 import qualified Data.Text as T
 import Text.Megaparsec ((<?>))
@@ -257,8 +257,8 @@ float = token . P.try $ P.float
 
 {- * Symbols, identifiers, names and operators -}
 
-reservedIdentifiers :: HS.HashSet String
-reservedIdentifiers = HS.fromList
+reservedIdentifiers :: S.Set String
+reservedIdentifiers = S.fromList
   [ "Type"
   , "case", "class", "codata", "constructor", "corecord", "data"
   , "do", "dsl", "else", "export", "if", "implementation", "implicit"
@@ -297,7 +297,7 @@ reserved name = token $ P.try $ do
 identifier :: Parsing m => m String
 identifier = P.try $ do
   ident <- identifierOrReserved
-  when (ident `HS.member` reservedIdentifiers) $ P.unexpected . P.Label . NonEmpty.fromList $ "reserved " ++ ident
+  when (ident `S.member` reservedIdentifiers) $ P.unexpected . P.Label . NonEmpty.fromList $ "reserved " ++ ident
   when (ident == "_") $ P.unexpected . P.Label . NonEmpty.fromList $ "wildcard"
   return ident
 

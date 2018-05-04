@@ -35,7 +35,7 @@ import Data.Binary
 import Data.ByteString.Lazy as B hiding (elem, length, map)
 import Data.List as L
 import Data.Maybe (catMaybes)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import System.Directory
 import System.FilePath
 

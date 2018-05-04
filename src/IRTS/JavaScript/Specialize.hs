@@ -17,7 +17,7 @@ module IRTS.JavaScript.Specialize
   , qualifyN
   ) where
 
-import qualified Data.Map.Strict as Map
+import qualified Util.Map as Map
 import qualified Data.Text as T
 import Idris.Core.TT
 import IRTS.JavaScript.AST

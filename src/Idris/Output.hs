@@ -38,7 +38,7 @@ import Prelude hiding ((<$>))
 
 import Control.Arrow (first)
 import Control.Monad.Trans.Except (ExceptT(ExceptT), runExceptT)
-import Data.List (intersperse, nub)
+import Data.List (intersperse, nub, sortOn)
 import Data.Maybe (fromJust, fromMaybe, isJust, listToMaybe)
 import System.Console.Haskeline.MonadException (MonadException(controlIO),
                                                 RunIO(RunIO))
@@ -239,7 +239,7 @@ iPrintFunTypes bnd n []        = iPrintError $ "No such variable " ++ show n
 iPrintFunTypes bnd n overloads = do ist <- getIState
                                     let ppo = ppOptionIst ist
                                     let infixes = idris_infixes ist
-                                    let output = vsep (map (uncurry (ppOverload ppo infixes)) overloads)
+                                    let output = vsep (map (uncurry (ppOverload ppo infixes)) (sortOn fst overloads))
                                     iRenderResult output
   where fullName ppo n | length overloads > 1 = prettyName True True bnd n
                        | otherwise = prettyName True (ppopt_impl ppo) bnd n

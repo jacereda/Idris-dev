@@ -34,8 +34,9 @@ import Idris.Core.TT
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.List hiding (partition)
+import Data.Hashable
 import qualified Data.List (partition)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import GHC.Generics (Generic)
 
 data CaseDef = CaseDef [Name] !SC [Term]
@@ -53,6 +54,8 @@ deriving instance Binary SC'
 
 data CaseType = Updatable | Shared
    deriving (Eq, Ord, Show, Generic)
+
+instance Hashable CaseType
 
 type SC = SC' Term
 

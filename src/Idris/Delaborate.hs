@@ -30,7 +30,7 @@ import Prelude hiding ((<$>))
 import Control.Applicative (Alternative((<|>)))
 import Control.Monad.State
 import Data.Generics.Uniplate.Data (transform)
-import Data.List (nub)
+import Data.List (nub, sort)
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as T
 
@@ -408,7 +408,7 @@ pprintErr' i (InvalidTCArg n t)
         <> annName n <$>
         text "(Implementation arguments must be type or data constructors)"
 pprintErr' i (CantResolveAlts as) = text "Can't disambiguate name:" <+>
-                                    align (cat (punctuate (comma <> space) (map (fmap (fancifyAnnots i True) . annName) as)))
+                                    align (cat (punctuate (comma <> space) (map (fmap (fancifyAnnots i True) . annName) (sort as))))
 pprintErr' i (NoValidAlts as) = text "Can't disambiguate since no name has a suitable type:" <+>
                                     indented (align (cat (punctuate (comma <> space) (map (fmap (fancifyAnnots i True) . annName) as))))
 pprintErr' i (NoTypeDecl n) = text "No type declaration for" <+> annName n
@@ -470,7 +470,7 @@ pprintErr' i (UniverseError fc uexp old new suspects) =
                     , text "Old domain:" <+> text (show old)
                     , text "New domain:" <+> text (show new)
                     , text "Involved constraints:" <+>
-                      (indented . vsep) (map (text . show) suspects)
+                      (indented . vsep) (map (text . show) (sort suspects))
                     ]
 pprintErr' i (UniqueError NullType n)
            = text "Borrowed name" <+> annName' n (showbasic n)

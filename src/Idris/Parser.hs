@@ -50,7 +50,7 @@ import Data.Generics.Uniplate.Data (descendM)
 import Data.List
 import qualified Data.List.NonEmpty as NonEmpty
 import qualified Data.List.Split as Spl
-import qualified Data.Map as M
+import qualified Util.Map as M
 import Data.Maybe
 import Data.Ord
 import qualified System.Directory as Dir (makeAbsolute)

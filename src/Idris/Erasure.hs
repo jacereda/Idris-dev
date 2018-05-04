@@ -5,7 +5,7 @@ Description : Utilities to erase stuff not necessary for runtime.
 License     : BSD3
 Maintainer  : The Idris Community.
 -}
-{-# LANGUAGE PatternGuards #-}
+{-# LANGUAGE PatternGuards, DeriveGeneric #-}
 
 module Idris.Erasure (performUsageAnalysis, mkFieldName) where
 
@@ -23,24 +23,29 @@ import Prelude hiding (id, (.))
 import Control.Arrow
 import Control.Category
 import Control.Monad.State
+import Data.Hashable
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import Data.IntSet (IntSet)
 import qualified Data.IntSet as IS
 import Data.List
-import Data.Map (Map)
-import qualified Data.Map as M
+import Util.Map (Map)
+import qualified Util.Map as M
 import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as S
+import Util.Set (Set)
+import qualified Util.Set as S
 import Data.Text (pack)
 import qualified Data.Text as T
+import GHC.Generics (Generic)
+
 
 -- | UseMap maps names to the set of used (reachable) argument
 -- positions.
 type UseMap = Map Name (IntMap (Set Reason))
 
-data Arg = Arg Int | Result deriving (Eq, Ord)
+data Arg = Arg Int | Result deriving (Eq, Ord, Generic)
+
+instance Hashable Arg
 
 instance Show Arg where
     show (Arg i) = show i

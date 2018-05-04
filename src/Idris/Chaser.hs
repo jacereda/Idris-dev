@@ -22,8 +22,8 @@ import Idris.Unlit
 
 import Control.Monad.State
 import Data.List
-import qualified Data.Map as M
-import qualified Data.Set as S
+import qualified Util.Map as M
+import qualified Util.Set as S
 import Data.Time.Clock
 import System.Directory
 import Util.System (readSource)

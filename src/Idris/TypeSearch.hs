@@ -34,22 +34,23 @@ import Util.Pretty (Doc, annotate, char, text, vsep, (<>))
 
 #if (MIN_VERSION_base(4,11,0))
 import Prelude hiding (Semigroup(..), pred)
-import qualified Prelude as S (Semigroup(..))
+import qualified Prelude as P (Semigroup(..))
 #else
 import Prelude hiding (pred)
 #endif
 import Control.Applicative (Applicative(..), (<$>), (<*>), (<|>))
 import Control.Arrow (first, second, (&&&), (***))
 import Control.Monad (guard, when)
+import Data.Hashable
 import Data.List (find, partition, (\\))
-import Data.Map (Map)
-import qualified Data.Map as M
+import Util.Map (Map)
+import qualified Util.Map as M
 import Data.Maybe (catMaybes, fromMaybe, isJust, mapMaybe, maybeToList)
 import Data.Monoid (Monoid(mappend, mempty))
 import Data.Ord (comparing)
 import qualified Data.PriorityQueue.FingerTree as Q
-import Data.Set (Set)
-import qualified Data.Set as S
+import Util.Set (Set)
+import qualified Util.Set as S
 import qualified Data.Text as T (isPrefixOf, pack)
 import Data.Traversable (traverse)
 
@@ -126,7 +127,7 @@ unLazy typ = case typ of
   _ -> typ
 
 -- | reverse the edges for a directed acyclic graph
-reverseDag :: Ord k => [((k, a), Set k)] -> [((k, a), Set k)]
+reverseDag :: (Ord k, Hashable k) => [((k, a), Set k)] -> [((k, a), Set k)]
 reverseDag xs = map f xs where
   f ((k, v), _) = ((k, v), S.fromList . map (fst . fst) $ filter (S.member k . snd) xs)
 
@@ -135,7 +136,7 @@ reverseDag xs = map f xs where
 -- arguments of a function.
 -- returns [(the name and type of the bound variable
 --          the names in the type of the bound variable)]
-computeDagP :: Ord n
+computeDagP :: (Ord n, Hashable n)
   => (TT n -> Bool) -- ^ filter to remove some arguments
   -> TT n
   -> ([((n, TT n), Set n)], [(n, TT n)], TT n)
@@ -154,7 +155,7 @@ computeDagP removePred t = (reverse (map f arguments), reverse theRemovedArgs , 
 -- | Collect the names and types of all the free variables
 -- The Boolean indicates those variables which are determined due to injectivity
 -- I have not given nearly enough thought to know whether this is correct
-usedVars :: Ord n => TT n -> Map n (TT n, Bool)
+usedVars :: (Ord n, Hashable n) => TT n -> Map n (TT n, Bool)
 usedVars = f True where
   f b (P Bound n t) = M.singleton n (t, b) `M.union` f b t
   f b (Bind n binder t2) = (M.delete n (f b t2) `M.union`) $ case binder of
@@ -167,7 +168,7 @@ usedVars = f True where
   f _ _ = M.empty
 
 -- | Remove a node from a directed acyclic graph
-deleteFromDag :: Ord n => n -> [((n, TT n), (a, Set n))] -> [((n, TT n), (a, Set n))]
+deleteFromDag :: (Ord n, Hashable n) => n -> [((n, TT n), (a, Set n))] -> [((n, TT n), (a, Set n))]
 deleteFromDag name [] = []
 deleteFromDag name (((name2, ty), (ix, set)) : xs) = (if name == name2
   then id
@@ -243,13 +244,13 @@ instance Ord Score where
 
 
 #if (MIN_VERSION_base(4,11,0))
-instance S.Semigroup a => S.Semigroup (Sided a) where
-    (Sided l1 r1) <> (Sided l2 r2) = Sided (l1 S.<> l2) (r1 S.<> r2)
+instance P.Semigroup a => P.Semigroup (Sided a) where
+    (Sided l1 r1) <> (Sided l2 r2) = Sided (l1 P.<> l2) (r1 P.<> r2)
 
-instance S.Semigroup AsymMods where
+instance P.Semigroup AsymMods where
     (<>) = mappend
 
-instance S.Semigroup Score where
+instance P.Semigroup Score where
     (<>) = mappend
 #endif
 
@@ -431,8 +432,10 @@ matchTypesBulk istate maxScore type1 types = getAllResults startQueueOfQueues wh
     -- find variables which are determined uniquely by the type
     -- due to injectivity
     matchedVarMap = usedVars term
-    bothT f (x, y) = (f x, f y)
-    (injUsedVars, notInjUsedVars) = bothT M.keys . M.partition id . M.filterWithKey (\k _-> k `elem` map fst hs) $ M.map snd matchedVarMap
+    part o@(ts, fs) k v = case k `elem` map fst hs of
+      True -> if v then (k:ts, fs) else (ts, k:fs)
+      False -> o
+    (injUsedVars, notInjUsedVars) = M.foldlWithKey' part ([],[]) $ M.map snd matchedVarMap
     varsInTy = injUsedVars ++ notInjUsedVars
     toDelete = name : varsInTy
     deleteMany = foldr (.) id (map deleteName toDelete)

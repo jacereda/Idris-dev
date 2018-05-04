@@ -35,9 +35,9 @@ import Control.Monad
 import Control.Monad.State.Strict
 import Data.Foldable (for_)
 import Data.List
-import qualified Data.Map as M
+import qualified Util.Map as M
 import Data.Maybe (fromMaybe, mapMaybe, maybeToList)
-import qualified Data.Set as S
+import qualified Util.Set as S
 import Debug.Trace
 
 data ElabMode = ETyDecl | ETransLHS | ELHS | EImpossible | ERHS

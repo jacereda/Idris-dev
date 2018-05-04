@@ -75,10 +75,11 @@ import Data.Binary hiding (get, put)
 import Data.Char
 import Data.Data
 import Data.Foldable (Foldable)
+import Data.Hashable
+import qualified Util.Set as S
 import Data.List hiding (group, insert)
-import qualified Data.Map.Strict as Map
+import qualified Util.Map as Map
 import Data.Maybe (listToMaybe)
-import Data.Set (Set, fromList, insert, member)
 import qualified Data.Text as LT
 import qualified Data.Text.Short as T
 import qualified Data.Text.Short.Partial as PT
@@ -103,6 +104,8 @@ data FC = FC { _fc_fname :: String, -- ^ Filename
         | NoFC -- ^ Locations for machine-generated terms
         | FileFC { _fc_fname :: String } -- ^ Locations with file only
   deriving (Data, Generic, Typeable, Ord)
+
+instance Hashable FC
 
 -- TODO: find uses and destroy them, doing this case analysis at call sites
 -- | Give a notion of filename associated with an FC
@@ -164,6 +167,8 @@ instance Eq FC where
 
 -- | FC with equality
 newtype FC' = FC' { unwrapFC :: FC } deriving (Data, Generic, Typeable, Ord)
+
+instance Hashable FC'
 
 instance Eq FC' where
   FC' fc == FC' fc' = fcEq fc fc'
@@ -475,6 +480,8 @@ data Name = UN !TText -- ^ User-provided name
           | SymRef !Int -- ^ Reference to IBC file symbol table (used during serialisation)
   deriving (Eq, Ord, Data, Generic, Typeable)
 
+instance Hashable Name
+
 txt :: String -> TText
 txt = T.pack
 
@@ -524,6 +531,9 @@ data SpecialName = WhereN !Int !Name !Name
                  | ImplementationCtorN !Name
                  | MetaN !Name !Name
   deriving (Eq, Ord, Data, Generic, Typeable)
+
+instance Hashable SpecialName
+
 {-!
 deriving instance Binary SpecialName
 !-}
@@ -647,15 +657,13 @@ addDef n v ctxt = case Map.lookup (nsroot n) ctxt of
 
 lookupCtxtName :: Name -> Ctxt a -> [(Name, a)]
 lookupCtxtName n ctxt = case Map.lookup (nsroot n) ctxt of
-                                  Just xs -> filterNS (Map.toList xs)
+                                  Just xs -> filterNS xs
                                   Nothing -> []
   where
-    filterNS [] = []
-    filterNS ((found, v) : xs)
-        | nsmatch n found = (found, v) : filterNS xs
-        | otherwise       = filterNS xs
-
-    nsmatch (NS n ns) (NS p ps) = ns `isPrefixOf` ps
+    filterNS = Map.foldlWithKey' collect []
+    collect s k v = if matches k then ((k,v):s) else s
+    matches = nsmatch n
+    nsmatch (NS _ ns) (NS _ ps) = ns `isPrefixOf` ps
     nsmatch (NS _ _)  _         = False
     nsmatch looking   found     = True
 
@@ -685,6 +693,8 @@ addAlist ((n, tm) : ds) ctxt = addDef n tm (addAlist ds ctxt)
 data NativeTy = IT8 | IT16 | IT32 | IT64
     deriving (Show, Eq, Ord, Enum, Data, Generic, Typeable)
 
+instance Hashable NativeTy
+
 instance Pretty NativeTy OutputAnnotation where
     pretty IT8  = text "Bits8"
     pretty IT16 = text "Bits16"
@@ -694,6 +704,8 @@ instance Pretty NativeTy OutputAnnotation where
 data IntTy = ITFixed NativeTy | ITNative | ITBig | ITChar
     deriving (Show, Eq, Ord, Data, Generic, Typeable)
 
+instance Hashable IntTy
+
 intTyName :: IntTy -> String
 intTyName ITNative = "Int"
 intTyName ITBig = "BigInt"
@@ -702,6 +714,8 @@ intTyName (ITChar) = "Char"
 
 data ArithTy = ATInt IntTy | ATFloat -- TODO: Float vectors https://github.com/idris-lang/Idris-dev/issues/1723
     deriving (Show, Eq, Ord, Data, Generic, Typeable)
+
+instance Hashable ArithTy
 
 instance Pretty ArithTy OutputAnnotation where
     pretty (ATInt ITNative) = text "Int"
@@ -722,6 +736,8 @@ data Const = I Int | BI Integer | Fl Double | Ch Char | Str String
            | WorldType | TheWorld
            | VoidType | Forgot
   deriving (Ord, Data, Generic, Typeable)
+
+instance Hashable Const
 
 -- We need to compare Double using bit-pattern identity rather than
 -- Haskell's Eq, which equates 0.0 and -0.0, leading to a
@@ -818,6 +834,8 @@ constDocs prim                             = "Undocumented"
 data Universe = NullType | UniqueType | AllTypes
   deriving (Eq, Ord, Data, Generic, Typeable)
 
+instance Hashable Universe
+
 instance Show Universe where
     show UniqueType = "UniqueType"
     show NullType = "NullType"
@@ -849,6 +867,8 @@ deriving instance Binary Raw
 data ImplicitInfo = Impl { tcimplementation :: Bool, toplevel_imp :: Bool,
                            machine_gen :: Bool }
   deriving (Show, Eq, Ord, Data, Generic, Typeable)
+
+instance Hashable ImplicitInfo
 
 {-!
 deriving instance Binary ImplicitInfo
@@ -904,6 +924,9 @@ data Binder b = Lam   { binderCount :: RigCount,
               | PVTy  { binderTy  :: !b }
                 -- ^ The type of a pattern binding
   deriving (Show, Eq, Ord, Functor, Foldable, Traversable, Data, Generic, Typeable)
+
+instance (Hashable a) => Hashable (Binder a)
+
 {-!
 deriving instance Binary Binder
 !-}
@@ -949,6 +972,8 @@ data UExp = UVar String Int -- ^ universe variable, with source file to disambig
           | UVal Int -- ^ explicit universe level
   deriving (Eq, Ord, Data, Generic, Typeable)
 
+instance Hashable UExp
+
 instance Sized UExp where
   size _ = 1
 
@@ -964,9 +989,13 @@ data UConstraint = ULT UExp UExp -- ^ Strictly less than
                  | ULE UExp UExp -- ^ Less than or equal to
   deriving (Eq, Ord, Data, Generic, Typeable)
 
+instance Hashable UConstraint
+
 data ConstraintFC = ConstraintFC { uconstraint :: UConstraint,
                                    ufc :: FC }
   deriving (Show, Data, Generic, Typeable)
+
+instance Hashable ConstraintFC
 
 instance Eq ConstraintFC where
     x == y = uconstraint x == uconstraint y
@@ -985,6 +1014,9 @@ data NameType = Bound
               | DCon {nt_tag :: Int, nt_arity :: Int, nt_unique :: Bool} -- ^ Data constructor
               | TCon {nt_tag :: Int, nt_arity :: Int} -- ^ Type constructor
   deriving (Show, Ord, Data, Generic, Typeable)
+
+instance Hashable NameType
+
 {-!
 deriving instance Binary NameType
 !-}
@@ -1007,6 +1039,8 @@ data AppStatus n = Complete
                  | Holes [n]
     deriving (Eq, Ord, Functor, Data, Generic, Typeable, Show)
 
+instance Hashable a => Hashable (AppStatus a)
+
 -- | Terms in the core language. The type parameter is the type of
 -- identifiers used for bindings and explicit named references;
 -- usually we use @TT 'Name'@.
@@ -1027,6 +1061,9 @@ data TT n = P NameType n (TT n) -- ^ named references with type
           | TType UExp -- ^ the type of types at some level
           | UType Universe -- ^ Uniqueness type universe (disjoint from TType)
   deriving (Ord, Functor, Data, Generic, Typeable)
+
+instance (Hashable a) => Hashable (TT a)
+
 {-!
 deriving instance Binary TT
 !-}
@@ -1079,6 +1116,8 @@ instance Pretty a o => Pretty (TT a) o where
 
 data RigCount = Rig0 | Rig1 | RigW
   deriving (Show, Eq, Ord, Data, Generic, Typeable)
+
+instance Hashable RigCount
 
 rigPlus :: RigCount -> RigCount -> RigCount
 rigPlus Rig0 Rig0 = Rig0
@@ -1512,15 +1551,15 @@ uniqueName :: Name -> [Name] -> Name
 uniqueName n hs | n `elem` hs = uniqueName (nextName n) hs
                 | otherwise   = n
 
-uniqueNameSet :: Name -> Set Name -> Name
-uniqueNameSet n hs | n `member` hs = uniqueNameSet (nextName n) hs
+uniqueNameSet :: Name -> S.Set Name -> Name
+uniqueNameSet n hs | n `S.member` hs = uniqueNameSet (nextName n) hs
                    | otherwise   = n
 
 uniqueBinders :: [Name] -> TT Name -> TT Name
-uniqueBinders ns = ubSet (fromList ns) where
+uniqueBinders ns = ubSet (S.fromList ns) where
     ubSet ns (Bind n b sc)
         = let n' = uniqueNameSet n ns
-              ns' = insert n' ns in
+              ns' = S.insert n' ns in
               Bind n' (fmap (ubSet ns') b) (ubSet ns' sc)
     ubSet ns (App s f a) = App s (ubSet ns f) (ubSet ns a)
     ubSet ns t = t

@@ -28,7 +28,7 @@ import Prelude hiding ((<>))
 import Control.Monad
 import Control.Monad.State
 import Data.List
-import qualified Data.Map as Map
+import qualified Util.Map as Map
 import Data.Maybe
 
 recheckC = recheckC_borrowing False True []
