@@ -33,4 +33,4 @@ notMember :: (Eq k, Hashable k) => k -> Map k v -> Bool
 notMember k = not . M.member k
 
 toAscList :: (Ord k, Ord v) => Map k v -> [(k,v)]
-toAscList = sort . M.toList
+toAscList = sortOn fst . M.toList
